@@ -11,7 +11,7 @@ class FieldManager {
 
     /**
      * @param minClusterSize minimum value (inclusive) of a cluster (adjacent numbers of the same value) to be collected
-     * @param maxPointValue maximum value used by a random number generator to inject values to a field's cells
+     * @param maxPointValue maximum value (inclusive) used by a random number generator to inject values to a field's cells
      */
     constructor(private minClusterSize: number = 4, private maxPointValue: number = 3) {
     }
