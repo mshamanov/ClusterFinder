@@ -2,9 +2,18 @@ import Field from "./Field.js";
 import Point from "./Point.js";
 import Cluster from "./Cluster.js";
 
+/**
+ * Class to manipulate DOM
+ */
 class View {
     private static root: string = ".main";
 
+    /**
+     * Displays the button on the html page
+     *
+     * @param value button's value
+     * @param callback function to call upon clicking the button
+     */
     public static showButton(value: string = "", callback: (event: MouseEvent) => void): void {
         const buttonCallback = (event: MouseEvent) => {
             callback(event);
@@ -17,6 +26,9 @@ class View {
         buttonElement.onclick = buttonCallback;
     }
 
+    /**
+     * Hides the button
+     */
     public static hideButton(): void {
         const buttonElement: HTMLButtonElement = View.getButton();
         if (!buttonElement.classList.contains("hidden")) {
@@ -24,6 +36,9 @@ class View {
         }
     }
 
+    /**
+     * Returns the html element representing the button
+     */
     private static getButton(): HTMLButtonElement {
         const buttonElement: HTMLButtonElement | null = document.querySelector(".control button");
 
@@ -34,7 +49,12 @@ class View {
         return buttonElement;
     }
 
-    public static draw(field: Field) {
+    /**
+     * Displays a given field on the html page
+     *
+     * @param field given field
+     */
+    public static showField(field: Field) {
         const rootElement: HTMLElement | null = document.querySelector(this.root);
 
         if (!rootElement) {
@@ -54,23 +74,27 @@ class View {
         }
     }
 
-    public static print(value: string): void {
+    /**
+     * Displays a message on the html page informing about the progress of the application
+     *
+     * @param message message to display
+     */
+    public static showMessage(message: string): void {
         const outputElement: HTMLElement | null = document.querySelector(".output");
 
         if (!outputElement) {
             throw new Error(`Output element not found!`);
         }
 
-        outputElement.innerHTML = value;
+        outputElement.innerHTML = message;
     }
 
-    public static drawClusters(clusters: Cluster[]): void {
-        clusters.forEach(cluster => {
-            cluster.points.forEach(point => View.highlight(point));
-        });
-    }
-
-    public static async blinkClusters(clusters: Cluster[]): Promise<any> {
+    /**
+     * Highlights clusters on a field with a flashing animation
+     *
+     * @param clusters clusters to have a flashing animation
+     */
+    public static async flashClusters(clusters: Cluster[]): Promise<any> {
         function blink(ms: number) {
             return new Promise(resolve => {
                 setTimeout(() => {
@@ -90,6 +114,11 @@ class View {
         await Promise.all(promises);
     }
 
+    /**
+     * Highlights a point on a field
+     *
+     * @param point point to be highlighted
+     */
     private static highlight(point: Point): void {
         const pointElement: HTMLElement | null = document.getElementById(`col-x-${point.x}-y-${point.y}`);
 
@@ -100,6 +129,13 @@ class View {
         pointElement.classList.toggle("highlighted-point");
     }
 
+    /**
+     * Creates a div element
+     *
+     * @param id div id
+     * @param className div classes
+     * @param value value inside a div
+     */
     private static createDiv(id: string, className?: string, value?: string) {
         const div: HTMLDivElement = document.createElement("div");
         div.setAttribute("id", id);

@@ -7,7 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/**
+ * Class to manipulate DOM
+ */
 class View {
+    /**
+     * Displays the button on the html page
+     *
+     * @param value button's value
+     * @param callback function to call upon clicking the button
+     */
     static showButton(value = "", callback) {
         const buttonCallback = (event) => {
             callback(event);
@@ -18,12 +27,18 @@ class View {
         buttonElement.innerHTML = value;
         buttonElement.onclick = buttonCallback;
     }
+    /**
+     * Hides the button
+     */
     static hideButton() {
         const buttonElement = View.getButton();
         if (!buttonElement.classList.contains("hidden")) {
             buttonElement.classList.add("hidden");
         }
     }
+    /**
+     * Returns the html element representing the button
+     */
     static getButton() {
         const buttonElement = document.querySelector(".control button");
         if (!buttonElement) {
@@ -31,7 +46,12 @@ class View {
         }
         return buttonElement;
     }
-    static draw(field) {
+    /**
+     * Displays a given field on the html page
+     *
+     * @param field given field
+     */
+    static showField(field) {
         const rootElement = document.querySelector(this.root);
         if (!rootElement) {
             throw new Error(`Root element ${(View.root)} not found!`);
@@ -47,19 +67,24 @@ class View {
             rootElement.appendChild(rowDiv);
         }
     }
-    static print(value) {
+    /**
+     * Displays a message on the html page informing about the progress of the application
+     *
+     * @param message message to display
+     */
+    static showMessage(message) {
         const outputElement = document.querySelector(".output");
         if (!outputElement) {
             throw new Error(`Output element not found!`);
         }
-        outputElement.innerHTML = value;
+        outputElement.innerHTML = message;
     }
-    static drawClusters(clusters) {
-        clusters.forEach(cluster => {
-            cluster.points.forEach(point => View.highlight(point));
-        });
-    }
-    static blinkClusters(clusters) {
+    /**
+     * Highlights clusters on a field with a flashing animation
+     *
+     * @param clusters clusters to have a flashing animation
+     */
+    static flashClusters(clusters) {
         return __awaiter(this, void 0, void 0, function* () {
             function blink(ms) {
                 return new Promise(resolve => {
@@ -78,6 +103,11 @@ class View {
             yield Promise.all(promises);
         });
     }
+    /**
+     * Highlights a point on a field
+     *
+     * @param point point to be highlighted
+     */
     static highlight(point) {
         const pointElement = document.getElementById(`col-x-${point.x}-y-${point.y}`);
         if (!pointElement) {
@@ -85,6 +115,13 @@ class View {
         }
         pointElement.classList.toggle("highlighted-point");
     }
+    /**
+     * Creates a div element
+     *
+     * @param id div id
+     * @param className div classes
+     * @param value value inside a div
+     */
     static createDiv(id, className, value) {
         const div = document.createElement("div");
         div.setAttribute("id", id);

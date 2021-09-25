@@ -2,59 +2,84 @@ import Field from "./Field.js";
 import FieldManager from "./FieldManager.js";
 import Cluster from "./Cluster.js";
 import View from "./View.js";
+import Utils from "./Utils.js";
 
 const field: Field = new Field(5);
-const fieldManager: FieldManager = new FieldManager();
-View.draw(field);
-View.showButton("Start", () => start());
+const fieldManager: FieldManager = new FieldManager(4);
 
+View.showField(field);
+
+View.showButton("Start", async () => {
+    await start();
+});
+
+/**
+ * Starts the application
+ */
 async function start(): Promise<any> {
-    fieldManager.fillBlankPointsWithRandomNumbers(field);
-    View.draw(field);
+    let firstRun: boolean = true;
 
     while (true) {
-        const result = await repeat();
-        if (!result) {
+        const repeat = await action(firstRun);
+        if (firstRun) {
+            firstRun = false;
+        }
+        if (!repeat) {
             break;
         }
     }
 
-    View.showButton("Restart", () => {
-        fieldManager.fillWithNumber(field, -1);
-        start();
+    View.showButton("Restart", async () => {
+        fieldManager.fillAllWithNumber(field, -1);
+        await start();
     });
 }
 
-function repeat(): Promise<boolean> {
-    return new Promise(resolve => {
-        View.print("Discovering clusters...");
-        const clusters: Cluster[] = fieldManager.findClusters(field);
+/**
+ * Process the field to find all the clusters
+ *
+ * @param firstRun is the function being called for the first time
+ */
+function action(firstRun: boolean): Promise<boolean> {
+    return new Promise(async (resolve) => {
+            if (firstRun) {
+                fieldManager.fillBlankWithRandomNumbers(field);
+                View.showField(field);
+            }
 
-        if (clusters.length === 0) {
-            View.print("All clusters cleared out!");
-            resolve(false);
-            return;
-        }
+            View.showMessage("Discovering clusters...");
+            const clusters: Cluster[] = fieldManager.findClusters(field);
 
-        setTimeout(() => {
-            View.print(`Clusters found: ${clusters.length}`);
-            View.blinkClusters(clusters).then(() => {
-                    fieldManager.removeClusters(clusters, field);
-                    View.draw(field);
-
-                    setTimeout(() => {
-                        View.print("Refilling blank clusters...");
-                        fieldManager.dropPointsOnBlankClusters(clusters, field);
-                        View.draw(field);
-
-                        setTimeout(() => {
-                            fieldManager.fillBlankPointsWithRandomNumbers(field);
-                            View.draw(field);
-                            resolve(true);
-                        }, 700);
-                    }, 700);
+            if (clusters.length === 0) {
+                if (firstRun) {
+                    View.showMessage("No clusters found!");
+                } else {
+                    View.showMessage("All clusters cleared out!");
                 }
-            );
-        }, 1000);
-    });
+                resolve(false);
+                return;
+            }
+
+            await Utils.sleep(1000);
+
+            View.showMessage(`Clusters found: ${clusters.length}`);
+            await View.flashClusters(clusters);
+
+            fieldManager.removeClusters(clusters, field);
+            View.showField(field);
+
+            await Utils.sleep(700);
+
+            View.showMessage("Refilling blank clusters...");
+            fieldManager.dropPointsOnBlankClusters(field);
+            View.showField(field);
+
+            await Utils.sleep(700);
+
+            fieldManager.fillBlankWithRandomNumbers(field);
+            View.showField(field);
+
+            resolve(true);
+        }
+    );
 }

@@ -1,22 +1,42 @@
 import Cluster from "./Cluster.js";
 import Point from "./Point.js";
 import Utils from "./Utils.js";
+/**
+ * Class to manipulate a field {@link Field}
+ */
 class FieldManager {
-    constructor(clusterSize = 4) {
-        this.clusterSize = clusterSize;
+    /**
+     * @param minClusterSize minimum value (inclusive) of a cluster (adjacent numbers of the same value) to be collected
+     * @param maxPointValue maximum value used by a random number generator to inject values to a field's cells
+     */
+    constructor(minClusterSize = 4, maxPointValue = 3) {
+        this.minClusterSize = minClusterSize;
+        this.maxPointValue = maxPointValue;
         this.checkPoints = {};
     }
+    /**
+     * Finds clusters {@link Cluster} on a given field and returns them as an array
+     *
+     * @param field given field
+     */
     findClusters(field) {
         const clusters = [];
         this.iterateField(field, (x, y) => {
             const collected = this.findConnections(new Point(x, y), field);
-            if (collected.length >= this.clusterSize) {
+            if (collected.length >= this.minClusterSize) {
                 clusters.push(new Cluster(collected));
             }
         });
         this.checkPoints = {};
         return clusters;
     }
+    /**
+     * Finds adjacent numbers of the same value representing a cluster {@link Cluster}
+     * and returns their coordinates as an array of points {@link Point}
+     *
+     * @param point point to begin search from
+     * @param field given field
+     */
     findConnections(point, field) {
         var _a;
         if (!this.checkPoints[point.x]) {
@@ -52,6 +72,12 @@ class FieldManager {
         }
         return connections;
     }
+    /**
+     * Removes clusters {@link Cluster} from a given field
+     *
+     * @param clusters given clusters
+     * @param field given field
+     */
     removeClusters(clusters, field) {
         clusters.forEach(cluster => {
             cluster.points.forEach(point => {
@@ -59,7 +85,12 @@ class FieldManager {
             });
         });
     }
-    dropPointsOnBlankClusters(clusters, field) {
+    /**
+     * Places field values on top of the blank spaces left after the clusters having been removed
+     *
+     * @param field given field
+     */
+    dropPointsOnBlankClusters(field) {
         let startingBlankPoint = null;
         for (let y = field.size - 1; y >= 0; y--) {
             startingBlankPoint = null;
@@ -80,18 +111,35 @@ class FieldManager {
             }
         }
     }
-    fillBlankPointsWithRandomNumbers(field) {
+    /**
+     * Fills blank points of a given field with randomly generated numbers
+     *
+     * @param field given field
+     */
+    fillBlankWithRandomNumbers(field) {
         this.iterateField(field, (x, y) => {
             if (field.getValue(x, y) === -1) {
-                field.setValue(x, y, Utils.getRandomNum(field.maxPointValue));
+                field.setValue(x, y, Utils.getRandomNum(this.maxPointValue));
             }
         });
     }
-    fillWithNumber(field, num) {
+    /**
+     * Fills all the points of a given field with the given value
+     *
+     * @param field given field
+     * @param numValue given value to fill the points of a field
+     */
+    fillAllWithNumber(field, numValue) {
         this.iterateField(field, (x, y) => {
-            field.setValue(x, y, num);
+            field.setValue(x, y, numValue);
         });
     }
+    /**
+     * Iterates a given field and calls a callback function against its every point
+     *
+     * @param field given field
+     * @param callback function to call while field being iterated
+     */
     iterateField(field, callback) {
         for (let x = 0; x < field.size; x++) {
             for (let y = 0; y < field.size; y++) {

@@ -10,51 +10,69 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import Field from "./Field.js";
 import FieldManager from "./FieldManager.js";
 import View from "./View.js";
+import Utils from "./Utils.js";
 const field = new Field(5);
-const fieldManager = new FieldManager();
-View.draw(field);
-View.showButton("Start", () => start());
+const fieldManager = new FieldManager(4);
+View.showField(field);
+View.showButton("Start", () => __awaiter(void 0, void 0, void 0, function* () {
+    yield start();
+}));
+/**
+ * Starts the application
+ */
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
-        fieldManager.fillBlankPointsWithRandomNumbers(field);
-        View.draw(field);
+        let firstRun = true;
         while (true) {
-            const result = yield repeat();
-            if (!result) {
+            const repeat = yield action(firstRun);
+            if (firstRun) {
+                firstRun = false;
+            }
+            if (!repeat) {
                 break;
             }
         }
-        View.showButton("Restart", () => {
-            fieldManager.fillWithNumber(field, -1);
-            start();
-        });
+        View.showButton("Restart", () => __awaiter(this, void 0, void 0, function* () {
+            fieldManager.fillAllWithNumber(field, -1);
+            yield start();
+        }));
     });
 }
-function repeat() {
-    return new Promise(resolve => {
-        View.print("Discovering clusters...");
+/**
+ * Process the field to find all the clusters
+ *
+ * @param firstRun is the function being called for the first time
+ */
+function action(firstRun) {
+    return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+        if (firstRun) {
+            fieldManager.fillBlankWithRandomNumbers(field);
+            View.showField(field);
+        }
+        View.showMessage("Discovering clusters...");
         const clusters = fieldManager.findClusters(field);
         if (clusters.length === 0) {
-            View.print("All clusters cleared out!");
+            if (firstRun) {
+                View.showMessage("No clusters found!");
+            }
+            else {
+                View.showMessage("All clusters cleared out!");
+            }
             resolve(false);
             return;
         }
-        setTimeout(() => {
-            View.print(`Clusters found: ${clusters.length}`);
-            View.blinkClusters(clusters).then(() => {
-                fieldManager.removeClusters(clusters, field);
-                View.draw(field);
-                setTimeout(() => {
-                    View.print("Refilling blank clusters...");
-                    fieldManager.dropPointsOnBlankClusters(clusters, field);
-                    View.draw(field);
-                    setTimeout(() => {
-                        fieldManager.fillBlankPointsWithRandomNumbers(field);
-                        View.draw(field);
-                        resolve(true);
-                    }, 700);
-                }, 700);
-            });
-        }, 1000);
-    });
+        yield Utils.sleep(1000);
+        View.showMessage(`Clusters found: ${clusters.length}`);
+        yield View.flashClusters(clusters);
+        fieldManager.removeClusters(clusters, field);
+        View.showField(field);
+        yield Utils.sleep(700);
+        View.showMessage("Refilling blank clusters...");
+        fieldManager.dropPointsOnBlankClusters(field);
+        View.showField(field);
+        yield Utils.sleep(700);
+        fieldManager.fillBlankWithRandomNumbers(field);
+        View.showField(field);
+        resolve(true);
+    }));
 }
